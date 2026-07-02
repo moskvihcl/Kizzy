@@ -15,6 +15,7 @@ package xyz.dead8309.feature_experimental_rpc
 import android.content.Intent
 import android.provider.Settings
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -24,6 +25,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AppsOutage
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.PauseCircle
 import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material.icons.filled.Timer
@@ -32,6 +35,8 @@ import androidx.compose.material.icons.outlined.AppSettingsAlt
 import androidx.compose.material.icons.outlined.Apps
 import androidx.compose.material.icons.outlined.Image
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LargeTopAppBar
@@ -53,6 +58,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.my.kizzy.data.rpc.Constants
 import com.my.kizzy.data.rpc.TemplateKeys
 import com.my.kizzy.feature_rpc_base.AppUtils
 import com.my.kizzy.feature_rpc_base.services.AppDetectionService
@@ -61,6 +67,7 @@ import com.my.kizzy.feature_rpc_base.services.ExperimentalRpc
 import com.my.kizzy.feature_rpc_base.services.MediaRpcService
 import com.my.kizzy.resources.R
 import com.my.kizzy.ui.components.BackButton
+import com.my.kizzy.ui.components.RpcField
 import com.my.kizzy.ui.components.RpcFieldWithCompletions
 import com.my.kizzy.ui.components.SettingItem
 import com.my.kizzy.ui.components.Subtitle
@@ -291,6 +298,44 @@ fun ExperimentalRpcScreen(
                         onValueChange = { onEvent(UiEvent.SetTemplateState(it)) },
                         completionList = completions
                     )
+                }
+
+                item {
+                    val platformIcon = if (state.platformIsExpanded)
+                        Icons.Default.KeyboardArrowUp
+                    else
+                        Icons.Default.KeyboardArrowDown
+
+                    RpcField(
+                        value = state.platform,
+                        label = R.string.activity_platform,
+                        trailingIcon = {
+                            Icon(
+                                imageVector = platformIcon,
+                                contentDescription = null,
+                                modifier = Modifier.clickable {
+                                    onEvent(UiEvent.TriggerPlatformDropDownMenu)
+                                })
+                        },
+                        content = {
+                            DropdownMenu(
+                                expanded = state.platformIsExpanded,
+                                onDismissRequest = {
+                                    onEvent(UiEvent.TriggerPlatformDropDownMenu)
+                                },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Constants.ACTIVITY_PLATFORMS.forEach { (label, value) ->
+                                    DropdownMenuItem(
+                                        text = { Text(text = label) },
+                                        onClick = { onEvent(UiEvent.SetPlatform(value)) },
+                                    )
+                                }
+                            }
+                        }
+                    ) {
+                        onEvent(UiEvent.SetPlatform(it))
+                    }
                 }
 
                 item {

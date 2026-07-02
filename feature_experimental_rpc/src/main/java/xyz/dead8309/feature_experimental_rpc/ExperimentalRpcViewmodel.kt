@@ -43,6 +43,7 @@ class ExperimentalRpcViewmodel @Inject constructor(
             showPlaybackState = Prefs[Prefs.EXPERIMENTAL_RPC_SHOW_PLAYBACK_STATE, false],
             enableTimestamps = Prefs[Prefs.EXPERIMENTAL_RPC_ENABLE_TIMESTAMPS, false],
             hideOnPause = Prefs[Prefs.EXPERIMENTAL_RPC_HIDE_ON_PAUSE, false],
+            platform = Prefs[Prefs.EXPERIMENTAL_RPC_PLATFORM, ""],
         )
     )
     val uiState = _uiState.asStateFlow()
@@ -157,6 +158,15 @@ class ExperimentalRpcViewmodel @Inject constructor(
                 is UiEvent.ToggleHideOnPause -> {
                     Prefs[Prefs.EXPERIMENTAL_RPC_HIDE_ON_PAUSE] = event.enabled
                     _uiState.update { it.copy(hideOnPause = event.enabled) }
+                }
+
+                is UiEvent.SetPlatform -> {
+                    Prefs[Prefs.EXPERIMENTAL_RPC_PLATFORM] = event.value
+                    _uiState.update { it.copy(platform = event.value, platformIsExpanded = false) }
+                }
+
+                is UiEvent.TriggerPlatformDropDownMenu -> {
+                    _uiState.update { it.copy(platformIsExpanded = !it.platformIsExpanded) }
                 }
             }
         }

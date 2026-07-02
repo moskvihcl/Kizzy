@@ -94,6 +94,7 @@ class ExperimentalRpc : Service() {
         Prefs[Prefs.EXPERIMENTAL_RPC_TEMPLATE_DETAILS, TemplateKeys.MEDIA_TITLE]
     private var templateState =
         Prefs[Prefs.EXPERIMENTAL_RPC_TEMPLATE_STATE, TemplateKeys.MEDIA_ARTIST]
+    private var platform = Prefs[Prefs.EXPERIMENTAL_RPC_PLATFORM, ""]
 
     private var appActivityTypes: Map<String, Int> = Prefs.getAppActivityTypes()
     private var enabledExperimentalApps: List<String> = try {
@@ -146,6 +147,7 @@ class ExperimentalRpc : Service() {
             templateName = Prefs[Prefs.EXPERIMENTAL_RPC_TEMPLATE_NAME, TemplateKeys.APP_NAME]
             templateDetails = Prefs[Prefs.EXPERIMENTAL_RPC_TEMPLATE_DETAILS, TemplateKeys.MEDIA_TITLE]
             templateState = Prefs[Prefs.EXPERIMENTAL_RPC_TEMPLATE_STATE, TemplateKeys.MEDIA_ARTIST]
+            platform = Prefs[Prefs.EXPERIMENTAL_RPC_PLATFORM, ""]
             useAppsRpc = Prefs[Prefs.EXPERIMENTAL_RPC_USE_APPS_RPC, true]
             useMediaRpc = Prefs[Prefs.EXPERIMENTAL_RPC_USE_MEDIA_RPC, true]
             appActivityTypes = Prefs.getAppActivityTypes()
@@ -334,7 +336,8 @@ class ExperimentalRpc : Service() {
                     largeText = finalLargeText,
                     smallText = finalSmallText,
                     time = finalTimestamps,
-                    packageName = effectivePackageName ?: ""
+                    packageName = effectivePackageName ?: "",
+                    platform = platform.ifEmpty { null }
                 ),
                 enableTimestamps = Prefs[Prefs.EXPERIMENTAL_RPC_ENABLE_TIMESTAMPS, true]
             )
@@ -360,6 +363,7 @@ class ExperimentalRpc : Service() {
                 setState(finalState)
                 setStartTimestamps(finalTimestamps?.start)
                 setStopTimestamps(finalTimestamps?.end)
+                setPlatform(platform.ifEmpty { null })
                 setLargeImage(finalLargeImage, finalLargeText)
                 setSmallImage(finalSmallImage, finalSmallText)
                 if (Prefs[Prefs.USE_RPC_BUTTONS, false]) {

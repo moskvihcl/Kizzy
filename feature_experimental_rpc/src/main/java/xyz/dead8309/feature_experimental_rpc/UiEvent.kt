@@ -25,4 +25,6 @@ sealed interface UiEvent {
     data class ToggleShowPlaybackState(val enabled: Boolean) : UiEvent
     data class ToggleEnableTimestamps(val enabled: Boolean) : UiEvent
     data class ToggleHideOnPause(val enabled: Boolean) : UiEvent
+    data class SetPlatform(val value: String) : UiEvent
+    object TriggerPlatformDropDownMenu : UiEvent
 }

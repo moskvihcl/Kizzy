@@ -32,5 +32,7 @@ data class UiState(
     val showAppIcon: Boolean = false,
     val showPlaybackState: Boolean = true,
     val enableTimestamps: Boolean = true,
-    val hideOnPause: Boolean = false
+    val hideOnPause: Boolean = false,
+    val platform: String = "",
+    val platformIsExpanded: Boolean = false
 )
