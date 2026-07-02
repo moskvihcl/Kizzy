@@ -27,4 +27,9 @@ sealed interface UiEvent {
     data class ToggleHideOnPause(val enabled: Boolean) : UiEvent
     data class SetPlatform(val value: String) : UiEvent
     object TriggerPlatformDropDownMenu : UiEvent
+    data class ToggleButtons(val enabled: Boolean) : UiEvent
+    data class SetButton1Text(val value: String) : UiEvent
+    data class SetButton1Url(val value: String) : UiEvent
+    data class SetButton2Text(val value: String) : UiEvent
+    data class SetButton2Url(val value: String) : UiEvent
 }

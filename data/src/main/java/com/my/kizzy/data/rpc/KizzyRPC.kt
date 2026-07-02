@@ -211,6 +211,16 @@ class KizzyRPC(
     }
 
     /**
+     * Clears any previously set buttons and their urls.
+     * Useful before re-applying buttons on a reconnect so they don't accumulate.
+     */
+    fun clearButtons(): KizzyRPC {
+        buttons.clear()
+        buttonUrl.clear()
+        return this
+    }
+
+    /**
      * Button1 text
      * @param button1_Text
      * @return

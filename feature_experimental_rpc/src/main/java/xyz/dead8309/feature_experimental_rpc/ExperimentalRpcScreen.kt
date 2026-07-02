@@ -306,8 +306,12 @@ fun ExperimentalRpcScreen(
                     else
                         Icons.Default.KeyboardArrowDown
 
+                    // Show the human-readable label (e.g. "Android") for the stored id.
+                    val platformLabel = Constants.SPOOF_PLATFORMS.entries
+                        .firstOrNull { it.value == state.platform }?.key ?: state.platform
+
                     RpcField(
-                        value = state.platform,
+                        value = platformLabel,
                         label = R.string.activity_platform,
                         trailingIcon = {
                             Icon(
@@ -334,7 +338,50 @@ fun ExperimentalRpcScreen(
                             }
                         }
                     ) {
-                        onEvent(UiEvent.SetPlatform(it))
+                        // Selection is driven by the dropdown; ignore free-text input.
+                    }
+                }
+
+                item {
+                    Subtitle(text = stringResource(R.string.rpc_buttons))
+                }
+                item {
+                    PreferenceSwitch(
+                        title = stringResource(R.string.use_custom_buttons),
+                        isChecked = state.buttonsEnabled,
+                        onClick = {
+                            onEvent(UiEvent.ToggleButtons(!state.buttonsEnabled))
+                        },
+                    )
+                }
+                if (state.buttonsEnabled) {
+                    item {
+                        RpcField(
+                            value = state.button1Text,
+                            label = R.string.activity_button1_text,
+                            onValueChange = { onEvent(UiEvent.SetButton1Text(it)) }
+                        )
+                    }
+                    item {
+                        RpcField(
+                            value = state.button1Url,
+                            label = R.string.activity_button1_url,
+                            onValueChange = { onEvent(UiEvent.SetButton1Url(it)) }
+                        )
+                    }
+                    item {
+                        RpcField(
+                            value = state.button2Text,
+                            label = R.string.activity_button2_text,
+                            onValueChange = { onEvent(UiEvent.SetButton2Text(it)) }
+                        )
+                    }
+                    item {
+                        RpcField(
+                            value = state.button2Url,
+                            label = R.string.activity_button2_url,
+                            onValueChange = { onEvent(UiEvent.SetButton2Url(it)) }
+                        )
                     }
                 }
 

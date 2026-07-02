@@ -35,7 +35,6 @@ import com.my.kizzy.data.rpc.TemplateKeys
 import com.my.kizzy.data.rpc.TemplateProcessor
 import com.my.kizzy.data.rpc.Timestamps
 import com.my.kizzy.domain.interfaces.Logger
-import com.my.kizzy.domain.model.rpc.RpcButtons
 import com.my.kizzy.feature_rpc_base.Constants
 import com.my.kizzy.feature_rpc_base.setLargeIcon
 import com.my.kizzy.preference.Prefs
@@ -211,9 +210,6 @@ class ExperimentalRpc : Service() {
         richMediaInfo: RichMediaMetadata? = null,
         rawMediaMetadata: MediaMetadata? = null,
     ) {
-        val rpcButtonsString = Prefs[Prefs.RPC_BUTTONS_DATA, "{}"]
-        val rpcButtons = Json.decodeFromString<RpcButtons>(rpcButtonsString)
-
         val finalName: String?
         val finalDetails: String?
         val finalState: String?
@@ -362,13 +358,12 @@ class ExperimentalRpc : Service() {
                 setStopTimestamps(finalTimestamps?.end)
                 setLargeImage(finalLargeImage, finalLargeText)
                 setSmallImage(finalSmallImage, finalSmallText)
-                if (Prefs[Prefs.USE_RPC_BUTTONS, false]) {
-                    with(rpcButtons) {
-                        setButton1(button1.takeIf { it.isNotEmpty() })
-                        setButton1URL(button1Url.takeIf { it.isNotEmpty() })
-                        setButton2(button2.takeIf { it.isNotEmpty() })
-                        setButton2URL(button2Url.takeIf { it.isNotEmpty() })
-                    }
+                clearButtons()
+                if (Prefs[Prefs.EXPERIMENTAL_RPC_USE_BUTTONS, false]) {
+                    setButton1(Prefs[Prefs.EXPERIMENTAL_RPC_BUTTON1_TEXT, ""].takeIf { it.isNotEmpty() })
+                    setButton1URL(Prefs[Prefs.EXPERIMENTAL_RPC_BUTTON1_URL, ""].takeIf { it.isNotEmpty() })
+                    setButton2(Prefs[Prefs.EXPERIMENTAL_RPC_BUTTON2_TEXT, ""].takeIf { it.isNotEmpty() })
+                    setButton2URL(Prefs[Prefs.EXPERIMENTAL_RPC_BUTTON2_URL, ""].takeIf { it.isNotEmpty() })
                 }
                 build()
             }

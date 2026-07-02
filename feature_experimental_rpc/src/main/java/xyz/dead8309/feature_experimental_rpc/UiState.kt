@@ -34,5 +34,10 @@ data class UiState(
     val enableTimestamps: Boolean = true,
     val hideOnPause: Boolean = false,
     val platform: String = "",
-    val platformIsExpanded: Boolean = false
+    val platformIsExpanded: Boolean = false,
+    val buttonsEnabled: Boolean = false,
+    val button1Text: String = "",
+    val button1Url: String = "",
+    val button2Text: String = "",
+    val button2Url: String = ""
 )

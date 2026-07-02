@@ -13,9 +13,13 @@
 package xyz.dead8309.feature_experimental_rpc
 
 import android.content.Context
+import android.content.Intent
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.my.kizzy.data.utils.getInstalledApps
+import com.my.kizzy.feature_rpc_base.AppUtils
+import com.my.kizzy.feature_rpc_base.Constants
+import com.my.kizzy.feature_rpc_base.services.ExperimentalRpc
 import com.my.kizzy.preference.Prefs
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -44,6 +48,11 @@ class ExperimentalRpcViewmodel @Inject constructor(
             enableTimestamps = Prefs[Prefs.EXPERIMENTAL_RPC_ENABLE_TIMESTAMPS, false],
             hideOnPause = Prefs[Prefs.EXPERIMENTAL_RPC_HIDE_ON_PAUSE, false],
             platform = Prefs[Prefs.EXPERIMENTAL_RPC_PLATFORM, ""],
+            buttonsEnabled = Prefs[Prefs.EXPERIMENTAL_RPC_USE_BUTTONS, false],
+            button1Text = Prefs[Prefs.EXPERIMENTAL_RPC_BUTTON1_TEXT, ""],
+            button1Url = Prefs[Prefs.EXPERIMENTAL_RPC_BUTTON1_URL, ""],
+            button2Text = Prefs[Prefs.EXPERIMENTAL_RPC_BUTTON2_TEXT, ""],
+            button2Url = Prefs[Prefs.EXPERIMENTAL_RPC_BUTTON2_URL, ""],
         )
     )
     val uiState = _uiState.asStateFlow()
@@ -70,6 +79,19 @@ class ExperimentalRpcViewmodel @Inject constructor(
                 )
             }
         }
+    }
+
+    /**
+     * Restarts the Experimental RPC service (if running) so settings that are only
+     * read on service start — the spoofed platform and RPC buttons — apply live
+     * without the user having to toggle the service off and on manually.
+     */
+    private fun restartServiceIfRunning() {
+        if (!AppUtils.experimentalRpcRunning()) return
+        val intent = Intent(context, ExperimentalRpc::class.java).apply {
+            action = Constants.ACTION_RESTART_SERVICE
+        }
+        context.startService(intent)
     }
 
     fun onEvent(event: UiEvent) {
@@ -163,10 +185,39 @@ class ExperimentalRpcViewmodel @Inject constructor(
                 is UiEvent.SetPlatform -> {
                     Prefs[Prefs.EXPERIMENTAL_RPC_PLATFORM] = event.value
                     _uiState.update { it.copy(platform = event.value, platformIsExpanded = false) }
+                    // Platform is applied via the gateway IDENTIFY on service start,
+                    // so restart the running service to apply the new platform live.
+                    restartServiceIfRunning()
                 }
 
                 is UiEvent.TriggerPlatformDropDownMenu -> {
                     _uiState.update { it.copy(platformIsExpanded = !it.platformIsExpanded) }
+                }
+
+                is UiEvent.ToggleButtons -> {
+                    Prefs[Prefs.EXPERIMENTAL_RPC_USE_BUTTONS] = event.enabled
+                    _uiState.update { it.copy(buttonsEnabled = event.enabled) }
+                    restartServiceIfRunning()
+                }
+
+                is UiEvent.SetButton1Text -> {
+                    Prefs[Prefs.EXPERIMENTAL_RPC_BUTTON1_TEXT] = event.value
+                    _uiState.update { it.copy(button1Text = event.value) }
+                }
+
+                is UiEvent.SetButton1Url -> {
+                    Prefs[Prefs.EXPERIMENTAL_RPC_BUTTON1_URL] = event.value
+                    _uiState.update { it.copy(button1Url = event.value) }
+                }
+
+                is UiEvent.SetButton2Text -> {
+                    Prefs[Prefs.EXPERIMENTAL_RPC_BUTTON2_TEXT] = event.value
+                    _uiState.update { it.copy(button2Text = event.value) }
+                }
+
+                is UiEvent.SetButton2Url -> {
+                    Prefs[Prefs.EXPERIMENTAL_RPC_BUTTON2_URL] = event.value
+                    _uiState.update { it.copy(button2Url = event.value) }
                 }
             }
         }
