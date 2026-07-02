@@ -42,7 +42,7 @@ fun homeFeaturesProvider(
             icon = R.drawable.ic_media_rpc,
             route = Routes.MEDIA_RPC,
             isChecked = AppUtils.mediaRpcRunning(),
-            showSwitch = hasNotificationAccess.value,
+            showSwitch = true,
             onClick = {
                 navigateTo(it)
             },
@@ -81,7 +81,7 @@ fun homeFeaturesProvider(
                     ctx.stopService(Intent(ctx, CustomRpcService::class.java))
             },
             shape = RoundedCornerShape(44.dp, 20.dp, 44.dp, 20.dp),
-            showSwitch = Prefs[Prefs.LAST_RUN_CUSTOM_RPC, ""].isNotEmpty(),
+            showSwitch = true,
             tooltipText = stringResource(id = R.string.main_customRpc_details),
             featureDocsLink = ToolTipContent.CUSTOM_RPC_DOCS_LINK
         ),
@@ -101,7 +101,7 @@ fun homeFeaturesProvider(
                     ctx.stopService(Intent(ctx, ExperimentalRpc::class.java))
             },
             shape = RoundedCornerShape(20.dp, 44.dp, 20.dp, 44.dp),
-            showSwitch = hasUsageAccess.value && hasNotificationAccess.value && userVerified,
+            showSwitch = true,
             tooltipText = stringResource(id = R.string.main_experimentalRpc_details),
             featureDocsLink = ToolTipContent.EXPERIMENTAL_RPC_DOCS_LINK
         )
