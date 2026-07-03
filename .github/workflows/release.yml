@@ -2,6 +2,15 @@ name: Build Release Apk
 
 on:
   workflow_dispatch:
+    inputs:
+      notes_en:
+        description: "What's new (English)"
+        required: false
+        default: ''
+      notes_ru:
+        description: 'Что нового (Русский)'
+        required: false
+        default: ''
 
 permissions:
   contents: write
@@ -85,16 +94,44 @@ jobs:
         id: apk
         run: echo "path=$(find app/build/outputs/apk/release -name '*.apk' | head -1)" >> "$GITHUB_OUTPUT"
 
+      - name: Generate git changelog
+        id: changelog
+        run: |
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [ -n "$LAST_TAG" ]; then
+            COMMITS=$(git log "${LAST_TAG}..HEAD" --pretty=format:"- %s" --no-merges | head -30)
+          else
+            COMMITS=$(git log --pretty=format:"- %s" --no-merges | head -30)
+          fi
+          echo "commits<<EOF" >> "$GITHUB_OUTPUT"
+          printf '%s\n' "$COMMITS" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
       - name: Publish to Releases
         uses: softprops/action-gh-release@v2
         with:
           tag_name: fork-${{ github.run_number }}
           name: Kizzy Fork build ${{ github.run_number }}
           body: |
-            Signed release build of the Kizzy Fork (package `io.kizzy.fork`).
+            ## What's new / Что нового
 
-            Fork customizations built by Claude (Anthropic's Claude Code).
-            See the [README](../../blob/master/README.md) for the full list of changes.
+            ${{ github.event.inputs.notes_en != '' && github.event.inputs.notes_en || '_No release notes provided._' }}
+
+            ${{ github.event.inputs.notes_ru != '' && github.event.inputs.notes_ru || '_Заметки к релизу не указаны._' }}
+
+            ---
+
+            ## Commits in this build / Коммиты в этой сборке
+
+            ${{ steps.changelog.outputs.commits }}
+
+            ---
+
+            **Package / Пакет:** `io.kizzy.fork`
+            **Version / Версия:** `6.2-fork-${{ github.run_number }}`
+            **Base / База:** [Kizzy by dead8309](https://github.com/dead8309/Kizzy)
+            **Fork customizations built by** [Claude Code](https://claude.com/claude-code) (Anthropic)
+            See the [README](../../blob/master/README.md) for the full list of fork features.
           files: ${{ steps.apk.outputs.path }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
