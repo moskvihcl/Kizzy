@@ -127,7 +127,7 @@ jobs:
 
             ---
 
-            **Package / Пакет:** `io.kizzy.fork`
+            **Package / Пакет:** `com.my.kizzy.enhanced`
             **Version / Версия:** `6.2-enhanced-${{ github.run_number }}`
             **Base / База:** [Kizzy by dead8309](https://github.com/dead8309/Kizzy)
             See the [README](../../blob/master/README.md) for the full list of fork features.

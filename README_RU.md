@@ -6,7 +6,7 @@
 <div align="center">
 <img src="https://img.shields.io/badge/Minimum%20SDK-27-%23?&style=flat-square&color=5b5ef7">
 <img src="https://img.shields.io/badge/kotlin-5b5ef7.svg?logo=kotlin&logoColor=white&style=flat-square">
-<img src="https://img.shields.io/badge/package-io.kizzy.fork-5b5ef7?style=flat-square">
+<img src="https://img.shields.io/badge/package-com.my.kizzy.enhanced-5b5ef7?style=flat-square">
 <img src="https://img.shields.io/badge/name-Kizzy%20Enhanced-5b5ef7?style=flat-square">
 </div>
 
@@ -93,7 +93,7 @@
 ## Скачать
 Последний подписанный `app-release.apk` находится на странице [**Releases**](../../releases/latest).
 
-**Kizzy Enhanced** использует package id **`io.kizzy.fork`**, поэтому устанавливается параллельно с оригинальным Kizzy.
+**Kizzy Enhanced** использует package id **`com.my.kizzy.enhanced`**, поэтому устанавливается параллельно с оригинальным Kizzy.
 
 > [!WARNING]
 > Приложение использует подключение к Discord Gateway. Используй на свой страх и риск.

@@ -45,5 +45,8 @@ data class UiState(
     val timestampMode: String = "default",
     val timestampModeExpanded: Boolean = false,
     val customTimestampStart: String = "",
-    val customTimestampEnd: String = ""
+    val customTimestampEnd: String = "",
+    val showSongAsTitle: Boolean = false,
+    val titleSource: String = "title", // "title" = song name, "artist" = artist name
+    val titleSourceExpanded: Boolean = false
 )

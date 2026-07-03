@@ -35,6 +35,7 @@ import androidx.compose.material.icons.outlined.AppSettingsAlt
 import androidx.compose.material.icons.outlined.Apps
 import androidx.compose.material.icons.outlined.Image
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.Title
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -225,6 +226,37 @@ fun ExperimentalRpcScreen(
                     Subtitle(
                         text = stringResource(R.string.main_mediaRpc)
                     )
+                }
+
+                // Title source selector
+                item {
+                    PreferenceSwitch(
+                        title = stringResource(R.string.experimental_rpc_title_toggle),
+                        description = stringResource(R.string.experimental_rpc_title_toggle_desc),
+                        isChecked = state.showSongAsTitle,
+                        onClick = { onEvent(UiEvent.ToggleShowSongAsTitle(!state.showSongAsTitle)) },
+                        icon = Icons.Outlined.Title,
+                    )
+                }
+                if (state.showSongAsTitle) {
+                    item {
+                        val titleSources = linkedMapOf(
+                            stringResource(R.string.title_source_song) to "title",
+                            stringResource(R.string.title_source_artist) to "artist",
+                        )
+                        RpcField(
+                            value = titleSources.entries.firstOrNull { it.value == state.titleSource }?.key ?: "",
+                            label = stringResource(R.string.experimental_rpc_title_toggle),
+                            onClick = { onEvent(UiEvent.TriggerTitleSourceDropDown) },
+                            isDropDown = true,
+                            dropDownExpanded = state.titleSourceExpanded,
+                            onDismissRequest = { onEvent(UiEvent.TriggerTitleSourceDropDown) },
+                            dropDownItems = titleSources.keys.toList(),
+                            onDropDownItemSelected = { label ->
+                                titleSources[label]?.let { onEvent(UiEvent.SetTitleSource(it)) }
+                            },
+                        )
+                    }
                 }
 
                 // Media Display Options

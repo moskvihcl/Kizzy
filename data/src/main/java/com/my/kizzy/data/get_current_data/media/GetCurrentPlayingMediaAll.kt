@@ -31,9 +31,11 @@ class GetCurrentPlayingMediaAll @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
     object Assets {
-        val PLAY = "app-assets/$APPLICATION_ID/1300361266212241430.png"
-        val PAUSE = "app-assets/$APPLICATION_ID/1300361619490209802.png"
-        val STOP = "app-assets/$APPLICATION_ID/1300361702621188160.png"
+        // These assets belong to the original Kizzy Discord application — do not change this ID
+        private const val MEDIA_ASSETS_APP_ID = "962990036020756480"
+        val PLAY = "app-assets/$MEDIA_ASSETS_APP_ID/1300361266212241430.png"
+        val PAUSE = "app-assets/$MEDIA_ASSETS_APP_ID/1300361619490209802.png"
+        val STOP = "app-assets/$MEDIA_ASSETS_APP_ID/1300361702621188160.png"
     }
 
     private fun getPlaybackStateIcon(playbackState: Int): RpcImage {

@@ -276,9 +276,16 @@ class ExperimentalRpc : Service() {
             effectivePackageName = richMediaInfo?.packageName
 
             logger.d(TAG, "Processing Rich Media Context")
-            finalName = processor.process(templateName) ?: richMediaInfo?.appName
-            finalDetails = processor.process(templateDetails) ?: richMediaInfo?.title
-            finalState = processor.process(templateState) ?: richMediaInfo?.artist
+            if (Prefs[Prefs.EXPERIMENTAL_RPC_SHOW_SONG_AS_TITLE, false]) {
+                val titleSource = Prefs[Prefs.EXPERIMENTAL_RPC_TITLE_SOURCE, "title"]
+                finalName = if (titleSource == "artist") richMediaInfo?.artist else richMediaInfo?.title
+                finalDetails = processor.process(templateDetails) ?: richMediaInfo?.appName
+                finalState = processor.process(templateState) ?: richMediaInfo?.artist.takeIf { titleSource != "artist" }
+            } else {
+                finalName = processor.process(templateName) ?: richMediaInfo?.appName
+                finalDetails = processor.process(templateDetails) ?: richMediaInfo?.title
+                finalState = processor.process(templateState) ?: richMediaInfo?.artist
+            }
 
             finalLargeImage = when {
                 Prefs[Prefs.EXPERIMENTAL_RPC_SHOW_COVER_ART, true] ->
