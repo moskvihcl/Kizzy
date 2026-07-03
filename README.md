@@ -10,7 +10,26 @@
 </div>
 
 > [!NOTE]
-> This is a personal fork. The customizations described below were implemented by **Claude** (Anthropic's Claude Code) at the request of the repository owner. The original app is by [dead8309](https://github.com/dead8309/Kizzy).
+> This is a personal fork of [Kizzy](https://github.com/dead8309/Kizzy) by dead8309. Additional customizations are listed in the "What's new" section below.
+
+## Features
+
+- [x] Clickable buttons
+- [x] Detects current Running app
+- [x] Detects Current Playing media
+- [x] Optional timestamps
+- [x] Custom Status
+- [x] Save/Load presence configs
+- [x] Material You theme
+- [x] Translations
+- [x] Easy Setup
+- [x] 300+ Predefined presets
+- [x] Create custom configs with your own images and links
+- [x] Preview RPC in the app itself
+- [x] Runs in background even when screen is off
+- [x] Gif support
+- [x] External Url support (meaning you can give a url which points to an image on the web and discord will show it!)
+- [x] Use Images from Gallery
 
 ## What's new in this fork
 
@@ -36,7 +55,7 @@ In addition to the original ones, with autocomplete:
 
 ### Timestamp mode selector
 - **Media / App (default)** — timestamps from the current track/app.
-- **Same as your current time (not reset after 24h)** — timer anchored to when you picked it; survives service restarts and does not reset after 24h.
+- **Same as current time of day** — Discord shows the current time as elapsed (e.g. at 15:30 → shows "15:30 elapsed").
 - **Custom** — type raw **Start / End Timestamp (in milliseconds)** yourself.
 
 ### Home screen redesign
