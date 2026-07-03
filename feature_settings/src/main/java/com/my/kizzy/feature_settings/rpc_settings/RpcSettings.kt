@@ -112,7 +112,7 @@ fun RpcSettings(onBackPressed: () -> Boolean) {
         LargeTopAppBar(title = {
             Text(
                 text = stringResource(id = R.string.settings),
-                style = MaterialTheme.typography.headlineLarge,
+                style = MaterialTheme.typography.headlineMedium,
             )
         }, navigationIcon = { BackButton { onBackPressed() } })
     }) { paddingValues ->

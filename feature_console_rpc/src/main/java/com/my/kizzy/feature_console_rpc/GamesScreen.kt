@@ -114,7 +114,7 @@ fun GamesScreen(
                     } else {
                         Text(
                             text = stringResource(id = R.string.main_consoleRpc),
-                            style = MaterialTheme.typography.headlineLarge,
+                            style = MaterialTheme.typography.headlineMedium,
                         )
                     }
                 },

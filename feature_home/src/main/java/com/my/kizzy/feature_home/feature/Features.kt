@@ -19,7 +19,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -130,7 +130,7 @@ private fun FeatureCard(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
-            .heightIn(min = 84.dp)
+            .height(84.dp)
             .clip(RoundedCornerShape(24.dp))
             .background(brush = brush)
             .clickable { feature.route?.let { feature.onClick(it) } }
@@ -144,23 +144,13 @@ private fun FeatureCard(
             modifier = Modifier.size(40.dp)
         )
         Spacer(modifier = Modifier.width(20.dp))
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = feature.title,
-                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.W500),
-                color = if (feature.isChecked) MaterialTheme.colorScheme.onPrimaryContainer
-                else MaterialTheme.colorScheme.onSecondaryContainer
-            )
-            if (feature.showSwitch) {
-                Text(
-                    text = if (feature.isChecked) stringResource(id = R.string.android_on)
-                    else stringResource(id = R.string.android_off),
-                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.W600),
-                    color = if (feature.isChecked) MaterialTheme.colorScheme.onPrimaryContainer
-                    else MaterialTheme.colorScheme.onSecondaryContainer
-                )
-            }
-        }
+        Text(
+            text = feature.title,
+            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.W500),
+            color = if (feature.isChecked) MaterialTheme.colorScheme.onPrimaryContainer
+            else MaterialTheme.colorScheme.onSecondaryContainer,
+            modifier = Modifier.weight(1f)
+        )
         if (feature.showSwitch) {
             Spacer(modifier = Modifier.width(12.dp))
             KSwitch(

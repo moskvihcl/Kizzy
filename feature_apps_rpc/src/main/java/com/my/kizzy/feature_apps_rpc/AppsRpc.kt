@@ -88,7 +88,7 @@ fun AppsRPC(
                     Column {
                         Text(
                             text = stringResource(id = R.string.main_appDetection),
-                            style = MaterialTheme.typography.headlineLarge,
+                            style = MaterialTheme.typography.headlineMedium,
                         )
                     }
                 },

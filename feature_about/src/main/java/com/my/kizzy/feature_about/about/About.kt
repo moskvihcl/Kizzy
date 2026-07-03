@@ -32,10 +32,11 @@ import com.my.kizzy.feature_about.BuildConfig
 
 
 
-const val github_Repository = "https://github.com/dead8309/Kizzy"
+const val github_Repository = "https://github.com/milliarderr/Kizzy"
+const val github_Repository_original = "https://github.com/dead8309/Kizzy"
 const val github_Release = "$github_Repository/releases"
 const val github_Issues = "$github_Repository/issues/new"
-const val github_privacy_policy = "$github_Repository/blob//master/TERMS_OF_SERVICE.md"
+const val github_privacy_policy = "$github_Repository_original/blob/master/TERMS_OF_SERVICE.md"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -55,7 +56,7 @@ fun About(
                 title = {
                     Text(
                         text = stringResource(id = R.string.about),
-                        style = MaterialTheme.typography.headlineLarge,
+                        style = MaterialTheme.typography.headlineMedium,
                     )
                 },
                 navigationIcon = { BackButton{ onBackPressed() } }

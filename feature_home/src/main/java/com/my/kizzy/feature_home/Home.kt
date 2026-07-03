@@ -107,8 +107,7 @@ fun Home(
     val scrollBehavior =
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
             rememberTopAppBarState(),
-            canScroll = { true })
-    val isCollapsed = scrollBehavior.state.collapsedFraction > 0.55f
+            canScroll = { false })
 
     OnLifecycleEvent { _, event ->
         if (event == Lifecycle.Event.ON_RESUME) {
@@ -153,10 +152,9 @@ fun Home(
                     title = {
                         Text(
                             text = stringResource(id = R.string.welcome) + ", ${user?.globalName ?: user?.username ?: ""}",
-                            style = if (isCollapsed) MaterialTheme.typography.headlineSmall else MaterialTheme.typography.headlineLarge,
-                            maxLines = if (isCollapsed) 1 else Int.MAX_VALUE,
-                            overflow = if (isCollapsed) androidx.compose.ui.text.style.TextOverflow.Ellipsis else androidx.compose.ui.text.style.TextOverflow.Clip,
-                            modifier = Modifier.padding(end = if (isCollapsed) 0.dp else 12.dp)
+                            style = MaterialTheme.typography.headlineMedium,
+                            maxLines = 1,
+                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                         )
                     },
                     navigationIcon = {
@@ -241,7 +239,8 @@ fun Home(
         ) { paddingValues ->
             LazyColumn(
                 modifier = Modifier.padding(paddingValues),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                userScrollEnabled = false
             ) {
                 item {
                     ChipSection()

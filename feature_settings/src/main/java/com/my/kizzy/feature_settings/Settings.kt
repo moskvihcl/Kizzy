@@ -81,23 +81,11 @@ fun SettingsDrawer(
         Column(
             modifier = Modifier.padding(15.dp)
         ) {
-            BadgedBox(
-                badge = {
-                    Badge(
-                        containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-                        contentColor = MaterialTheme.colorScheme.tertiary,
-                        modifier = Modifier.offset(8.dp, (-8).dp)
-                    ) {
-                        Text(text = BuildConfig.VERSION_NAME)
-                    }
-                },
+            Text(
+                text = "Kizzy " + BuildConfig.VERSION_NAME.replace("-fork-", " fork "),
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                 modifier = Modifier.padding(top = 8.dp, bottom = 10.dp)
-            ) {
-                Text(
-                    text = stringResource(R.string.app_name),
-                    style = MaterialTheme.typography.titleSmall
-                )
-            }
+            )
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(5.dp),
                 modifier = Modifier.weight(8f)

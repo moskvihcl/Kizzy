@@ -185,7 +185,7 @@ fun CustomRpcScreen(
                 title = {
                     Text(
                         text = stringResource(id = R.string.main_customRpc),
-                        style = MaterialTheme.typography.headlineLarge,
+                        style = MaterialTheme.typography.headlineMedium,
                     )
                 },
                 navigationIcon = { BackButton { onBackPressed() } },

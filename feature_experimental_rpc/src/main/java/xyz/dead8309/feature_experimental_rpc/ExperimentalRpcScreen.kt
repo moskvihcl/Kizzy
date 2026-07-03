@@ -115,7 +115,7 @@ fun ExperimentalRpcScreen(
                 title = {
                     Text(
                         text = stringResource(id = R.string.main_experimentalRpc),
-                        style = MaterialTheme.typography.headlineLarge,
+                        style = MaterialTheme.typography.headlineMedium,
                     )
                 },
                 navigationIcon = { BackButton { onBackPressed() } },

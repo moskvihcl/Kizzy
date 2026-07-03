@@ -37,6 +37,36 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
+      - name: Set fork version
+        run: |
+          sed -i 's/version-name = ".*"/version-name = "6.2-fork-${{ github.run_number }}"/' gradle/libs.versions.toml
+          sed -i 's/version-code =".*"/version-code ="${{ github.run_number }}"/' gradle/libs.versions.toml
+
+      - name: Update app icon
+        run: |
+          sudo apt-get install -y imagemagick
+          SRC="kizzy-fork-icon.png"
+          convert "$SRC" -resize 48x48   app/src/main/res/mipmap-mdpi/ic_launcher.png
+          convert "$SRC" -resize 72x72   app/src/main/res/mipmap-hdpi/ic_launcher.png
+          convert "$SRC" -resize 96x96   app/src/main/res/mipmap-xhdpi/ic_launcher.png
+          convert "$SRC" -resize 144x144 app/src/main/res/mipmap-xxhdpi/ic_launcher.png
+          convert "$SRC" -resize 192x192 app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
+          convert "$SRC" -resize 108x108 app/src/main/res/mipmap-mdpi/ic_launcher_foreground.png
+          convert "$SRC" -resize 162x162 app/src/main/res/mipmap-hdpi/ic_launcher_foreground.png
+          convert "$SRC" -resize 216x216 app/src/main/res/mipmap-xhdpi/ic_launcher_foreground.png
+          convert "$SRC" -resize 324x324 app/src/main/res/mipmap-xxhdpi/ic_launcher_foreground.png
+          convert "$SRC" -resize 432x432 app/src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.png
+          convert -size 108x108 xc:"#BF1527" app/src/main/res/mipmap-mdpi/ic_launcher_background.png
+          convert -size 162x162 xc:"#BF1527" app/src/main/res/mipmap-hdpi/ic_launcher_background.png
+          convert -size 216x216 xc:"#BF1527" app/src/main/res/mipmap-xhdpi/ic_launcher_background.png
+          convert -size 324x324 xc:"#BF1527" app/src/main/res/mipmap-xxhdpi/ic_launcher_background.png
+          convert -size 432x432 xc:"#BF1527" app/src/main/res/mipmap-xxxhdpi/ic_launcher_background.png
+          convert "$SRC" -resize 108x108 -colorspace gray app/src/main/res/mipmap-mdpi/ic_launcher_monochrome.png
+          convert "$SRC" -resize 162x162 -colorspace gray app/src/main/res/mipmap-hdpi/ic_launcher_monochrome.png
+          convert "$SRC" -resize 216x216 -colorspace gray app/src/main/res/mipmap-xhdpi/ic_launcher_monochrome.png
+          convert "$SRC" -resize 324x324 -colorspace gray app/src/main/res/mipmap-xxhdpi/ic_launcher_monochrome.png
+          convert "$SRC" -resize 432x432 -colorspace gray app/src/main/res/mipmap-xxxhdpi/ic_launcher_monochrome.png
+
       - name: Assemble Release
         env:
           KEYSTORE_FILE: ${{ runner.temp }}/release.keystore
