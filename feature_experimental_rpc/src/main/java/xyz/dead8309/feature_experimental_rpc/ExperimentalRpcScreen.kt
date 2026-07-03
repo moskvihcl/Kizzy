@@ -244,17 +244,38 @@ fun ExperimentalRpcScreen(
                             stringResource(R.string.title_source_song) to "title",
                             stringResource(R.string.title_source_artist) to "artist",
                         )
+                        val titleIcon = if (state.titleSourceExpanded)
+                            Icons.Default.KeyboardArrowUp
+                        else
+                            Icons.Default.KeyboardArrowDown
+                        val titleLabel = titleSources.entries
+                            .firstOrNull { it.value == state.titleSource }?.key ?: ""
                         RpcField(
-                            value = titleSources.entries.firstOrNull { it.value == state.titleSource }?.key ?: "",
-                            label = stringResource(R.string.experimental_rpc_title_toggle),
-                            onClick = { onEvent(UiEvent.TriggerTitleSourceDropDown) },
-                            isDropDown = true,
-                            dropDownExpanded = state.titleSourceExpanded,
-                            onDismissRequest = { onEvent(UiEvent.TriggerTitleSourceDropDown) },
-                            dropDownItems = titleSources.keys.toList(),
-                            onDropDownItemSelected = { label ->
-                                titleSources[label]?.let { onEvent(UiEvent.SetTitleSource(it)) }
+                            value = titleLabel,
+                            label = R.string.experimental_rpc_title_toggle,
+                            trailingIcon = {
+                                Icon(
+                                    imageVector = titleIcon,
+                                    contentDescription = null,
+                                    modifier = Modifier.clickable {
+                                        onEvent(UiEvent.TriggerTitleSourceDropDown)
+                                    }
+                                )
                             },
+                            content = {
+                                DropdownMenu(
+                                    expanded = state.titleSourceExpanded,
+                                    onDismissRequest = { onEvent(UiEvent.TriggerTitleSourceDropDown) },
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    titleSources.forEach { (label, value) ->
+                                        DropdownMenuItem(
+                                            text = { Text(text = label) },
+                                            onClick = { onEvent(UiEvent.SetTitleSource(value)) },
+                                        )
+                                    }
+                                }
+                            }
                         )
                     }
                 }
