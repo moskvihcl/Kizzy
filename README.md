@@ -87,7 +87,7 @@ In addition to the original ones, with autocomplete:
 - Fixed crashes when switching RPC features from the home screen.
 
 ## System Requirements
-- OS: Android 8.1 through 14 *(Android 14 may have some bugs with experimental features)*
+- OS: Android 8.1 through 16
 - RAM: 3 GB minimum
 
 ## Download
