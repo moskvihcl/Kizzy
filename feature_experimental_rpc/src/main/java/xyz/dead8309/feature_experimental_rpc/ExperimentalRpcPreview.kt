@@ -48,8 +48,8 @@ fun ExperimentalRpcPreview(
     // Build a fake RpcConfig from template fields so ActivityRow can render it
     val rpcConfig = RpcConfig(
         name = state.templateName.ifEmpty { "App Name" },
-        details = state.templateDetails.ifEmpty { null },
-        state = state.templateState.ifEmpty { null },
+        details = state.templateDetails,
+        state = state.templateState,
         type = "0",
     )
 
