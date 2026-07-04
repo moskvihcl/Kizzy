@@ -404,7 +404,7 @@ class ExperimentalRpc : Service() {
             }
         }
 
-        val notifTitle = finalName.takeIf { !it.isNullOrEmpty() } ?: getString(R.string.app_name)
+        val notifTitle = finalName.takeIf { !it.isNullOrEmpty() } ?: getString(R.string.app_name_full)
         val notifText = finalDetails ?: finalState
 
         notificationManager.notify(

@@ -18,13 +18,15 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.net.Uri
-import android.os.Build
 import android.os.Environment
-import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.selection.SelectionContainer
@@ -32,9 +34,11 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Update
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -52,11 +56,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.core.content.FileProvider
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.my.kizzy.resources.R
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import java.io.File
 
 fun Int.formatSize(): String =
     (this / 1024f / 1024f)
@@ -73,6 +77,66 @@ fun UpdateDialog(
     newVersionLog: String,
     apkUrl: String? = null,
     onDismissRequest: () -> Unit = {}
+) {
+    var showDownloadDialog by remember { mutableStateOf(false) }
+
+    if (showDownloadDialog && apkUrl != null) {
+        DownloadProgressDialog(
+            apkUrl = apkUrl,
+            onDismiss = {
+                showDownloadDialog = false
+                onDismissRequest()
+            }
+        )
+    }
+
+    AlertDialog(
+        modifier = modifier,
+        onDismissRequest = onDismissRequest,
+        icon = {
+            Icon(imageVector = Icons.Outlined.Update, contentDescription = "Update")
+        },
+        title = {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(text = stringResource(R.string.change_log))
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "$newVersionPublishDate ${newVersionSize.formatSize()}",
+                    color = MaterialTheme.colorScheme.outline.copy(alpha = 0.7f),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+        },
+        text = {
+            SelectionContainer {
+                Text(
+                    modifier = Modifier.verticalScroll(rememberScrollState()),
+                    text = newVersionLog,
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = {
+                if (apkUrl != null) {
+                    showDownloadDialog = true
+                }
+            }) {
+                Text(text = stringResource(R.string.update))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismissRequest) {
+                Text(text = stringResource(R.string.cancel))
+            }
+        },
+    )
+}
+
+@Composable
+private fun DownloadProgressDialog(
+    apkUrl: String,
+    onDismiss: () -> Unit,
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -93,22 +157,16 @@ fun UpdateDialog(
                     if (cursor.getInt(statusCol) == DownloadManager.STATUS_SUCCESSFUL) {
                         downloadState = DownloadState.DONE
                         progress = 1f
-                        val apkFile = File(
-                            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
-                            "kizzy-enhanced-update.apk"
-                        )
-                        val uri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                            FileProvider.getUriForFile(ctx, "${ctx.packageName}.provider", apkFile)
-                        } else {
-                            Uri.fromFile(apkFile)
+                        val uri = dm.getUriForDownloadedFile(id)
+                        if (uri != null) {
+                            ctx.startActivity(
+                                Intent(Intent.ACTION_VIEW).apply {
+                                    setDataAndType(uri, "application/vnd.android.package-archive")
+                                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                }
+                            )
                         }
-                        ctx.startActivity(
-                            Intent(Intent.ACTION_VIEW).apply {
-                                setDataAndType(uri, "application/vnd.android.package-archive")
-                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                            }
-                        )
                     } else {
                         downloadState = DownloadState.ERROR
                     }
@@ -117,27 +175,19 @@ fun UpdateDialog(
             }
         }
         val filter = IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            context.registerReceiver(receiver, filter, Context.RECEIVER_NOT_EXPORTED)
-        } else {
-            @Suppress("UnspecifiedRegisterReceiverFlag")
-            context.registerReceiver(receiver, filter)
-        }
-        onDispose { context.unregisterReceiver(receiver) }
-    }
+        context.registerReceiver(receiver, filter, Context.RECEIVER_NOT_EXPORTED)
 
-    fun startDownload() {
-        val url = apkUrl ?: return
-        downloadState = DownloadState.DOWNLOADING
-        progress = 0f
+        // Start download immediately
         val dm = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
-        val request = DownloadManager.Request(Uri.parse(url))
+        val request = DownloadManager.Request(Uri.parse(apkUrl))
             .setTitle("Kizzy Enhanced")
             .setDescription(context.getString(R.string.update))
             .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)
             .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "kizzy-enhanced-update.apk")
             .setMimeType("application/vnd.android.package-archive")
         downloadId = dm.enqueue(request)
+        downloadState = DownloadState.DOWNLOADING
+
         scope.launch {
             while (downloadState == DownloadState.DOWNLOADING) {
                 val cursor = dm.query(DownloadManager.Query().setFilterById(downloadId))
@@ -150,85 +200,77 @@ fun UpdateDialog(
                 delay(300)
             }
         }
+
+        onDispose { context.unregisterReceiver(receiver) }
     }
 
-    AlertDialog(
-        modifier = modifier,
-        onDismissRequest = { if (downloadState != DownloadState.DOWNLOADING) onDismissRequest() },
-        icon = {
-            Icon(imageVector = Icons.Outlined.Update, contentDescription = "Update")
-        },
-        title = {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(text = stringResource(R.string.change_log))
-                Spacer(modifier = Modifier.height(16.dp))
+    Dialog(
+        onDismissRequest = { if (downloadState != DownloadState.DOWNLOADING) onDismiss() },
+        properties = DialogProperties(dismissOnBackPress = downloadState != DownloadState.DOWNLOADING)
+    ) {
+        Surface(
+            shape = MaterialTheme.shapes.extraLarge,
+            tonalElevation = 6.dp,
+        ) {
+            Column(
+                modifier = Modifier.padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
                 Text(
-                    text = "$newVersionPublishDate ${newVersionSize.formatSize()}",
-                    color = MaterialTheme.colorScheme.outline.copy(alpha = 0.7f),
-                    style = MaterialTheme.typography.bodyMedium,
+                    text = when (downloadState) {
+                        DownloadState.DOWNLOADING -> stringResource(R.string.update)
+                        DownloadState.DONE -> stringResource(R.string.update_installing)
+                        DownloadState.ERROR -> stringResource(R.string.update_download_error)
+                        else -> stringResource(R.string.update)
+                    },
+                    style = MaterialTheme.typography.titleLarge,
                 )
-                Spacer(modifier = Modifier.height(16.dp))
-            }
-        },
-        text = {
-            Column {
-                SelectionContainer {
-                    Text(
-                        modifier = Modifier
-                            .verticalScroll(rememberScrollState())
-                            .weight(1f, fill = false),
-                        text = newVersionLog,
-                    )
-                }
-                AnimatedVisibility(visible = downloadState != DownloadState.IDLE) {
-                    Column {
-                        Spacer(modifier = Modifier.height(16.dp))
-                        when {
-                            downloadState == DownloadState.DOWNLOADING && progress <= 0f ->
-                                LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
-                            downloadState == DownloadState.DOWNLOADING ->
-                                LinearProgressIndicator(
-                                    progress = { progress },
-                                    modifier = Modifier.fillMaxWidth(),
-                                )
-                            else ->
-                                LinearProgressIndicator(
-                                    progress = { 1f },
-                                    modifier = Modifier.fillMaxWidth(),
-                                )
-                        }
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = when (downloadState) {
-                                DownloadState.DOWNLOADING -> "${(progress * 100).toInt()}%"
-                                DownloadState.DONE -> stringResource(R.string.update_installing)
-                                DownloadState.ERROR -> stringResource(R.string.update_download_error)
-                                else -> ""
-                            },
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.outline,
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    if (progress > 0f) {
+                        LinearProgressIndicator(
+                            progress = { progress },
+                            modifier = Modifier.weight(1f),
+                        )
+                        CircularProgressIndicator(
+                            progress = { progress },
+                            modifier = Modifier.size(32.dp),
+                            strokeWidth = 3.dp,
+                        )
+                    } else {
+                        LinearProgressIndicator(modifier = Modifier.weight(1f))
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(32.dp),
+                            strokeWidth = 3.dp,
                         )
                     }
                 }
+
+                Text(
+                    text = when (downloadState) {
+                        DownloadState.DOWNLOADING -> "${(progress * 100).toInt()}%"
+                        DownloadState.DONE -> "100%"
+                        else -> ""
+                    },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.outline,
+                )
+
+                if (downloadState == DownloadState.ERROR || downloadState == DownloadState.DONE) {
+                    TextButton(onClick = onDismiss) {
+                        Text(stringResource(R.string.cancel))
+                    }
+                }
             }
-        },
-        confirmButton = {
-            TextButton(
-                enabled = downloadState == DownloadState.IDLE || downloadState == DownloadState.ERROR,
-                onClick = { if (apkUrl != null) startDownload() }
-            ) {
-                Text(text = stringResource(R.string.update))
-            }
-        },
-        dismissButton = {
-            TextButton(
-                enabled = downloadState != DownloadState.DOWNLOADING,
-                onClick = onDismissRequest
-            ) {
-                Text(text = stringResource(R.string.cancel))
-            }
-        },
-    )
+        }
+    }
 }
 
 @Preview
