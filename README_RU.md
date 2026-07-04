@@ -1,6 +1,5 @@
 <div align="center">
-  <img width="167" height="167" alt="17831186969244515824460180534693" src="https://github.com/user-attachments/assets/02086040-660d-42d8-8830-78053e1e05a4" />
-<h1>Kizzy Enhanced</h1>
+<h1><img src="https://github.com/user-attachments/assets/02086040-660d-42d8-8830-78053e1e05a4" height="30" style="vertical-align: middle;"> Kizzy Enhanced</h1>
 <h4>Расширенный форк <a href="https://github.com/dead8309/Kizzy">Kizzy</a> — менеджер Discord Rich Presence для Android, написанный на Kotlin.</h4>
 </div>
 
@@ -14,7 +13,8 @@
 <div align="center">
 
 [![README in English](https://img.shields.io/badge/README-in%20English-blue?style=for-the-badge)](README.md)
-
+</div>
+<img width="926" height="1085" alt="17831857804884335100104411839142" src="https://github.com/user-attachments/assets/f8402300-d628-4104-8f86-dc6021c9fbbe" />
 </div>
 
 > [!NOTE]
