@@ -13,7 +13,9 @@
   
 [![README на русском](https://img.shields.io/badge/README-на%20русском%20языке-blue?style=for-the-badge)](README_RU.md)
 </div>
-<img width="926" height="1085" alt="17831857804884335100104411839142" src="https://github.com/user-attachments/assets/f8402300-d628-4104-8f86-dc6021c9fbbe" />
+<p>
+<img src="https://github.com/user-attachments/assets/f8402300-d628-4104-8f86-dc6021c9fbbe" width=60%/>
+</p>
 </div>
 
 > [!NOTE]
