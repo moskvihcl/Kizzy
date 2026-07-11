@@ -2,6 +2,7 @@
 # project level
 gradle = "8.13.2"
 kotlin = "2.1.20"
+ksp = "2.1.20-1.0.31"
 version-name = "6.2-enhanced-0"
 version-code ="14"
 
@@ -71,6 +72,7 @@ hilt-compiler = { module = "com.google.dagger:hilt-android-compiler", version.re
 # gradle plugins
 android-gradle-plugin = { module = "com.android.tools.build:gradle", version.ref = "gradle" }
 kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+ksp-gradle-plugin = { module = "com.google.devtools.ksp:symbol-processing-gradle-plugin", version.ref = "ksp" }
 
 # Ktor
 ktor-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
@@ -101,7 +103,7 @@ kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 
 [bundles]
