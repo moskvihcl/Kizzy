@@ -74,6 +74,10 @@ class MediaRpcService : Service() {
         val token = Prefs[TOKEN, ""]
         if (token.isEmpty()) stopSelf()
         setupWakeLock()
+        startDetection()
+    }
+
+    private fun startDetection() {
         val intent = Intent(this, MediaRpcService::class.java)
         intent.action = Constants.ACTION_STOP_SERVICE
         val pendingIntent = PendingIntent.getService(
@@ -105,6 +109,17 @@ class MediaRpcService : Service() {
 
         // Register first media session
         activeSessionsListener(mediaSessionManager.getActiveSessions(ComponentName(this, NotificationListener::class.java)), false)
+    }
+
+    private fun restartDetection() {
+        scope.coroutineContext.cancelChildren()
+        if (kizzyRPC.isRpcRunning()) {
+            kizzyRPC.closeRPC()
+        }
+        mediaSessionManager.removeOnActiveSessionsChangedListener(::activeSessionsListener)
+        currentMediaController?.unregisterCallback(mediaControllerCallback)
+        currentMediaController = null
+        startDetection()
     }
 
     suspend private fun updatePresence() {
@@ -226,8 +241,7 @@ class MediaRpcService : Service() {
                 if (ac == Constants.ACTION_STOP_SERVICE)
                     stopSelf()
                 else if (ac == Constants.ACTION_RESTART_SERVICE) {
-                    stopSelf()
-                    startService(Intent(this, MediaRpcService::class.java))
+                    restartDetection()
                 }
             }
         }

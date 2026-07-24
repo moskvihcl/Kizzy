@@ -38,6 +38,7 @@ import com.my.kizzy.resources.R
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -67,17 +68,26 @@ class AppDetectionService : Service() {
     private lateinit var restartPendingIntent: PendingIntent
 
     private var runningPackage = ""
+    private var pollingJob: Job? = null
     override fun onBind(intent: Intent): IBinder? = null
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (intent?.action == Constants.ACTION_STOP_SERVICE) {
             stopSelf()
         } else if (intent?.action == Constants.ACTION_RESTART_SERVICE) {
-            stopSelf()
-            startService(Intent(this, AppDetectionService::class.java))
+            restartDetection()
         } else {
             handleAppDetection()
         }
         return super.onStartCommand(intent, flags, startId)
+    }
+
+    private fun restartDetection() {
+        pollingJob?.cancel()
+        if (kizzyRPC.isRpcRunning()) {
+            kizzyRPC.closeRPC()
+        }
+        runningPackage = ""
+        handleAppDetection()
     }
 
     override fun onDestroy() {
@@ -113,7 +123,8 @@ class AppDetectionService : Service() {
 
         val rpcButtons = getRpcButtons()
 
-        scope.launch {
+        pollingJob?.cancel()
+        pollingJob = scope.launch {
             while (isActive) {
                 try {
                     val queryUsageStats = getUsageStats()

@@ -106,92 +106,114 @@ class ExperimentalRpc : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (intent?.action.equals(Constants.ACTION_STOP_SERVICE)) stopSelf()
         else if (intent?.action.equals(Constants.ACTION_RESTART_SERVICE)) {
-            stopSelf()
-            startService(Intent(this, ExperimentalRpc::class.java))
+            restartDetection()
         } else {
-            val stopIntent = Intent(this, ExperimentalRpc::class.java)
-            stopIntent.action = Constants.ACTION_STOP_SERVICE
-            val pendingIntent: PendingIntent = PendingIntent.getService(
-                this, 0, stopIntent, PendingIntent.FLAG_IMMUTABLE
-            )
-            val restartIntent = Intent(this, ExperimentalRpc::class.java)
-            restartIntent.action = Constants.ACTION_RESTART_SERVICE
-            val restartPendingIntent: PendingIntent = PendingIntent.getService(
-                this, 0, restartIntent, PendingIntent.FLAG_IMMUTABLE
-            )
-
-            val notification = notificationBuilder
-                .setSmallIcon(R.drawable.ic_dev_rpc)
-                .setContentTitle(getString(R.string.service_enabled))
-                .addAction(
-                    R.drawable.ic_dev_rpc,
-                    getString(R.string.restart),
-                    restartPendingIntent
-                )
-                .addAction(R.drawable.ic_dev_rpc, getString(R.string.exit), pendingIntent)
-                .build()
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-                startForeground(Constants.NOTIFICATION_ID, notification)
-            } else {
-                startForeground(Constants.NOTIFICATION_ID, notification, FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK)
-            }
-
-
-            mediaSessionManager = getSystemService(MEDIA_SESSION_SERVICE) as MediaSessionManager
-            // Registering the session listener requires Notification Listener access.
-            // Without it this throws SecurityException, so guard to avoid crashing.
-            try {
-                mediaSessionManager.addOnActiveSessionsChangedListener(
-                    ::activeSessionsListener,
-                    ComponentName(this, NotificationListener::class.java)
-                )
-            } catch (e: SecurityException) {
-                logger.e(TAG, "No notification access, media part disabled: ${e.message}")
-            }
-
-            // Always reload settings on start
-            templateName = Prefs[Prefs.EXPERIMENTAL_RPC_TEMPLATE_NAME, TemplateKeys.APP_NAME]
-            templateDetails = Prefs[Prefs.EXPERIMENTAL_RPC_TEMPLATE_DETAILS, TemplateKeys.MEDIA_TITLE]
-            templateState = Prefs[Prefs.EXPERIMENTAL_RPC_TEMPLATE_STATE, TemplateKeys.MEDIA_ARTIST]
-            useAppsRpc = Prefs[Prefs.EXPERIMENTAL_RPC_USE_APPS_RPC, true]
-            useMediaRpc = Prefs[Prefs.EXPERIMENTAL_RPC_USE_MEDIA_RPC, true]
-            appActivityTypes = Prefs.getAppActivityTypes()
-            enabledExperimentalApps = try {
-                Json.decodeFromString(Prefs[Prefs.ENABLED_EXPERIMENTAL_APPS, "[]"])
-            } catch (_: Exception) {
-                emptyList()
-            }
-
-            val initialMediaSessions = try {
-                mediaSessionManager.getActiveSessions(
-                    ComponentName(this, NotificationListener::class.java)
-                )
-            } catch (e: SecurityException) {
-                logger.e(TAG, "No notification access, skipping media sessions: ${e.message}")
-                emptyList()
-            }
-            var mediaActiveInitially = false
-            if (useMediaRpc && initialMediaSessions.isNotEmpty()) {
-                val firstActiveMediaController = initialMediaSessions.firstOrNull {
-                    enabledExperimentalApps.contains(it.packageName)
-                }
-                if (firstActiveMediaController != null) {
-                    mediaActiveInitially = true
-                    activeSessionsListener(listOf(firstActiveMediaController), false)
-                }
-            }
-
-            if (!mediaActiveInitially) {
-                if (useAppsRpc) {
-                    startAppDetectionCoroutine()
-                }
-            }
+            startDetection()
         }
         return super.onStartCommand(intent, flags, startId)
     }
 
+    private fun restartDetection() {
+        scope.coroutineContext.cancelChildren()
+        if (kizzyRPC.isRpcRunning()) {
+            kizzyRPC.closeRPC()
+        }
+        if (::mediaSessionManager.isInitialized) {
+            try {
+                mediaSessionManager.removeOnActiveSessionsChangedListener(::activeSessionsListener)
+            } catch (e: Exception) {
+                logger.e(TAG, "removeOnActiveSessionsChangedListener failed: ${e.message}")
+            }
+        }
+        currentMediaController?.unregisterCallback(mediaControllerCallback)
+        currentMediaController = null
+        isMediaSessionActive = false
+        startDetection()
+    }
+
+    private fun startDetection() {
+        val stopIntent = Intent(this, ExperimentalRpc::class.java)
+        stopIntent.action = Constants.ACTION_STOP_SERVICE
+        val pendingIntent: PendingIntent = PendingIntent.getService(
+            this, 0, stopIntent, PendingIntent.FLAG_IMMUTABLE
+        )
+        val restartIntent = Intent(this, ExperimentalRpc::class.java)
+        restartIntent.action = Constants.ACTION_RESTART_SERVICE
+        val restartPendingIntent: PendingIntent = PendingIntent.getService(
+            this, 0, restartIntent, PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val notification = notificationBuilder
+            .setSmallIcon(R.drawable.ic_dev_rpc)
+            .setContentTitle(getString(R.string.service_enabled))
+            .addAction(
+                R.drawable.ic_dev_rpc,
+                getString(R.string.restart),
+                restartPendingIntent
+            )
+            .addAction(R.drawable.ic_dev_rpc, getString(R.string.exit), pendingIntent)
+            .build()
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+            startForeground(Constants.NOTIFICATION_ID, notification)
+        } else {
+            startForeground(Constants.NOTIFICATION_ID, notification, FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK)
+        }
+
+
+        mediaSessionManager = getSystemService(MEDIA_SESSION_SERVICE) as MediaSessionManager
+        // Registering the session listener requires Notification Listener access.
+        // Without it this throws SecurityException, so guard to avoid crashing.
+        try {
+            mediaSessionManager.addOnActiveSessionsChangedListener(
+                ::activeSessionsListener,
+                ComponentName(this, NotificationListener::class.java)
+            )
+        } catch (e: SecurityException) {
+            logger.e(TAG, "No notification access, media part disabled: ${e.message}")
+        }
+
+        // Always reload settings on start
+        templateName = Prefs[Prefs.EXPERIMENTAL_RPC_TEMPLATE_NAME, TemplateKeys.APP_NAME]
+        templateDetails = Prefs[Prefs.EXPERIMENTAL_RPC_TEMPLATE_DETAILS, TemplateKeys.MEDIA_TITLE]
+        templateState = Prefs[Prefs.EXPERIMENTAL_RPC_TEMPLATE_STATE, TemplateKeys.MEDIA_ARTIST]
+        useAppsRpc = Prefs[Prefs.EXPERIMENTAL_RPC_USE_APPS_RPC, true]
+        useMediaRpc = Prefs[Prefs.EXPERIMENTAL_RPC_USE_MEDIA_RPC, true]
+        appActivityTypes = Prefs.getAppActivityTypes()
+        enabledExperimentalApps = try {
+            Json.decodeFromString(Prefs[Prefs.ENABLED_EXPERIMENTAL_APPS, "[]"])
+        } catch (_: Exception) {
+            emptyList()
+        }
+
+        val initialMediaSessions = try {
+            mediaSessionManager.getActiveSessions(
+                ComponentName(this, NotificationListener::class.java)
+            )
+        } catch (e: SecurityException) {
+            logger.e(TAG, "No notification access, skipping media sessions: ${e.message}")
+            emptyList()
+        }
+        var mediaActiveInitially = false
+        if (useMediaRpc && initialMediaSessions.isNotEmpty()) {
+            val firstActiveMediaController = initialMediaSessions.firstOrNull {
+                enabledExperimentalApps.contains(it.packageName)
+            }
+            if (firstActiveMediaController != null) {
+                mediaActiveInitially = true
+                activeSessionsListener(listOf(firstActiveMediaController), false)
+            }
+        }
+
+        if (!mediaActiveInitially) {
+            if (useAppsRpc) {
+                startAppDetectionCoroutine()
+            }
+        }
+    }
+
     private fun startAppDetectionCoroutine() {
         logger.d(TAG, "Starting app detection coroutine")
+        scope.coroutineContext.cancelChildren()
 
         var currentPackageName = ""
         val startTimestamps = Timestamps(start = System.currentTimeMillis())

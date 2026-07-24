@@ -41,6 +41,7 @@ open class DiscordWebSocketImpl(
     private var deliberateClose = false
     private var reconnectAttempts = 0
     private var awaitingHeartbeatAck = false
+    private var connectionJob: Job? = null
     private var client: HttpClient = HttpClient {
         install(WebSockets)
     }
@@ -53,7 +54,9 @@ open class DiscordWebSocketImpl(
     override val coroutineContext: CoroutineContext = supervisorJob + Dispatchers.Default
 
     override suspend fun connect() {
-        launch {
+        deliberateClose = false
+        connectionJob?.cancel()
+        connectionJob = launch {
             try {
                 logger.i("Gateway","Connect called")
                 val url = resumeGatewayUrl ?: gatewayUrl
@@ -267,14 +270,17 @@ open class DiscordWebSocketImpl(
         deliberateClose = true
         heartbeatJob?.cancel()
         heartbeatJob = null
-        this.cancel()
+        connectionJob?.cancel()
+        connectionJob = null
         resumeGatewayUrl = null
         sessionId = null
         connected = false
-        runBlocking {
-            websocket?.close()
-            logger.e("Gateway","Connection to gateway closed")
+        runCatching {
+            runBlocking {
+                websocket?.close()
+            }
         }
+        logger.e("Gateway","Connection to gateway closed")
     }
 
     override suspend fun sendActivity(presence: Presence) {
